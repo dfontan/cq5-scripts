@@ -20,14 +20,14 @@ class CQPasswordOpts
     options.newpwd = nil
     options.hostnames = []
     options.port = '4502'
-    options.cq5ver = '5.4'
+    options.cq5_version = '5.4'
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: #{File.basename($0)} [options]\n"
       opts.separator "\nSpecific options:"
 
-      opts.on("-v", "--version CQ5_VERSION", %w{ 5.4, 5.5 },
-              "CQ5 Version (default: 5.4, 5.5)") { |version| options.cq5ver = version }
+      opts.on("-cv", "--cqversion CQ5_VERSION", %w{ 5.4, 5.5 },
+              "CQ5 Version (default: 5.4, 5.5)") { |ver| options.cq5_version = ver }
 
       opts.on("-u", "--user OLD_PASSWORD",
               "username to change (default: admin)") { |user| options.user = user }
@@ -54,10 +54,11 @@ class CQPasswordOpts
 
     end
 
+    options.hostnames << [ 'localhost', options.port ] if options.hostnames.empty?
+
     opts.parse!(args)
 
     # prompts
-    options.hostnames << 'localhost' if options.hostnames.empty?
     options.oldpwd = ask("Enter old admin password:  ") { |q| q.echo = false } if options.oldpwd.nil?
     options.newpwd = ask("Enter new admin password:  ") { |q| q.echo = false } if options.newpwd.nil?
 
@@ -140,8 +141,19 @@ def change54( host, port, options )
 end
 
 options = CQPasswordOpts.parse(ARGV)
-#pp options
+
+if options.cq5_version.strip =~ /5.5/
+  puts "ERROR: CQ5.5 not implemented yet!!"
+  exit
+end
+
+pp options
+
 options.hostnames.each do |host|
-  change54( host.first, host.last, options)
+  begin
+    change54( host.first, host.last, options)
+  rescue Errno::ECONNREFUSED
+    puts "ERROR: Couldn't connect to #{host.first}:#{host.last}."
+  end
 end
 
