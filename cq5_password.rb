@@ -54,14 +54,13 @@ class CQPasswordOpts
 
     end
 
-    options.hostnames << [ 'localhost', options.port ] if options.hostnames.empty?
-
     opts.parse!(args)
 
     # prompts
     options.oldpwd = ask("Enter old admin password:  ") { |q| q.echo = false } if options.oldpwd.nil?
     options.newpwd = ask("Enter new admin password:  ") { |q| q.echo = false } if options.newpwd.nil?
 
+    options.hostnames << [ 'localhost', options.port ] if options.hostnames.empty?
     options
   end
 end
